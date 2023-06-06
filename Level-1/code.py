@@ -12,18 +12,27 @@
 '''
 
 from collections import namedtuple
+from decimal import Decimal
 
 Order = namedtuple('Order', 'id, items')
 Item = namedtuple('Item', 'type, description, amount, quantity')
 
 def validorder(order: Order):
-    net = 0
+    net = Decimal('0')
     
+    max_amt = 100000
+    max_qty = 100
+    max_len = 1e6
+
     for item in order.items:
         if item.type == 'payment':
-            net += item.amount
+            if item.amount > -1*max_amt and item.amount < max_amt:
+                net += Decimal(str(item.amount))
         elif item.type == 'product':
-            net -= item.amount * item.quantity
+            if item.quantity > 0 and item.quantity <= max_qty and item.amount > 0 and item.amount <= max_amt:
+                net -= Decimal(str(item.amount)) * item.quantity
+            if net > max_len or net < -1*max_len:
+                return("Amount exceeds maximum length")
         else:
             return("Invalid item type: %s" % item.type)
     
